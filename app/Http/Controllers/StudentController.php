@@ -46,7 +46,7 @@ class StudentController extends Controller
     {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
-            'class_id' => 'required|exists:classes,id',
+            'class_id' => 'sometimes|exists:classes,id',
             'nim' => 'required|unique:students,nim',
         ]);
 
@@ -65,6 +65,10 @@ class StudentController extends Controller
             'class_id' => 'sometimes|exists:classes,id',
             'nim' => 'sometimes|unique:students,nim,' . $id,
         ]);
+
+        if (empty($validated)) {
+            return response()->json(['message' => 'No data to update'], 400);
+        }
 
         $student->update($validated);
         return response()->json($student);

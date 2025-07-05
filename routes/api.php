@@ -10,6 +10,9 @@ use App\Http\Controllers\{
     AssignmentController
 };
 
+Route::post('/login', [UserController::class, 'login']);
+Route::post('/register', [UserController::class, 'store']);
+Route::middleware('auth:sanctum')->post('/logout', [UserController::class, 'logout']);
 Route::apiResource('users', UserController::class);
 Route::apiResource('students', StudentController::class);
 Route::apiResource('teachers', TeacherController::class);

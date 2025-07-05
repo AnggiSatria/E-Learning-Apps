@@ -46,7 +46,7 @@ class TeacherController extends Controller
     {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
-            'class_id' => 'required|exists:classes,id',
+            'class_id' => 'sometimes|exists:classes,id',
             'nip' => 'required|unique:teachers,nip',
         ]);
 
@@ -65,6 +65,10 @@ class TeacherController extends Controller
             'class_id' => 'sometimes|exists:classes,id',
             'nip' => 'sometimes|unique:teachers,nip,' . $id,
         ]);
+
+        if (empty($validated)) {
+            return response()->json(['message' => 'No data to update'], 400);
+        }
 
         $teacher->update($validated);
         return response()->json($teacher);
