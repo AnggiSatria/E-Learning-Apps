@@ -12,7 +12,7 @@ class Task extends Model
     public $incrementing = false;
     protected $keyType = 'string';
 
-    protected $fillable = ['id', 'name', 'description', 'class_id', 'due_date'];
+    protected $fillable = ['id', 'name', 'description', 'class_id', 'due_date', 'media_path'];
 
     public function class() {
         return $this->belongsTo(ClassModel::class);

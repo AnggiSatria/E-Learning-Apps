@@ -42,14 +42,23 @@ class TaskController extends Controller
             'name' => 'required|string',
             'description' => 'nullable|string',
             'class_id' => 'required|exists:classes,id',
-            'deadline' => 'nullable|date',
+            'due_date' => 'nullable|date',
+            'media' => 'nullable|file|mimes:pdf,doc,docx,zip,jpg,jpeg,png', // tambahkan validasi file
         ]);
 
         $validated['id'] = Str::uuid();
 
+        if ($request->hasFile('media')) {
+            $file = $request->file('media');
+            $path = $file->store('task-media', 'public'); 
+            $validated['media_path'] = $path;
+        }
+
         $task = Task::create($validated);
+
         return response()->json($task, 201);
     }
+
 
     public function update(Request $request, $id)
     {
@@ -59,12 +68,21 @@ class TaskController extends Controller
             'name' => 'sometimes|string',
             'description' => 'sometimes|string',
             'class_id' => 'sometimes|exists:classes,id',
-            'deadline' => 'sometimes|date',
+            'due_date' => 'sometimes|date',
+            'media' => 'nullable|file|mimes:pdf,doc,docx,zip,jpg,jpeg,png', // tambahkan validasi file
         ]);
 
+        if ($request->hasFile('media')) {
+            $file = $request->file('media');
+            $path = $file->store('task-media', 'public');
+            $validated['media_path'] = $path;
+        }
+
         $task->update($validated);
+
         return response()->json($task);
     }
+
 
     public function destroy($id)
     {

@@ -15,10 +15,10 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name');
             $table->text('description')->nullable();
+            $table->string('media_path')->nullable();
             $table->uuid('class_id');
             $table->timestamp('due_date')->nullable();
             $table->timestamps();
-        
             $table->foreign('class_id')->references('id')->on('classes')->onDelete('cascade');
         });
         

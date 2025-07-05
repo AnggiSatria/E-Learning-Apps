@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Request;
 use App\Http\Controllers\{
     UserController,
     StudentController,
@@ -11,7 +12,10 @@ use App\Http\Controllers\{
 };
 
 Route::post('/login', [UserController::class, 'login']);
-Route::post('/register', [UserController::class, 'store']);
+Route::post('/register', [UserController::class, 'register']);
+Route::middleware('auth:sanctum')->get('/profile', function (Request $request) {
+    return response()->json($request->user());
+});
 Route::middleware('auth:sanctum')->post('/logout', [UserController::class, 'logout']);
 Route::apiResource('users', UserController::class);
 Route::apiResource('students', StudentController::class);
