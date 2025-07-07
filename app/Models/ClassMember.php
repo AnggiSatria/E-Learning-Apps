@@ -15,7 +15,7 @@ class ClassMember extends Model
     protected $fillable = ['id', 'class_id', 'user_id', 'role'];
 
     public function class() {
-        return $this->belongsTo(ClassModel::class);
+        return $this->belongsTo(Classroom::class);
     }
 
     public function user() {

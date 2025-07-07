@@ -42,6 +42,24 @@ class ClassMemberController extends Controller
         return response()->json($member);
     }
 
+    public function getByUserId(Request $request, $userId)
+    {
+        $search = $request->query('search');
+
+        $classes = ClassMember::with('class')
+            ->where('user_id', $userId)
+            ->when($search, function ($query, $search) {
+                $query->whereHas('class', function ($q) use ($search) {
+                    $q->where('name', 'like', "%$search%");
+                });
+            })
+            ->get()
+            ->pluck('class'); 
+
+        return response()->json($classes);
+    }
+
+
     public function store(Request $request)
     {
         $validated = $request->validate([

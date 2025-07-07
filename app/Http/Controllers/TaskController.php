@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Models\ClassMember;
 
 class TaskController extends Controller
 {
@@ -35,6 +36,73 @@ class TaskController extends Controller
 
         return response()->json($task);
     }
+
+   
+
+    public function getByClassId(Request $request, $classId)
+    {
+        $search = $request->query('search');
+
+        $tasks = Task::with('class')
+            ->where('class_id', $classId)
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%$search%")
+                    ->orWhere('description', 'like', "%$search%");
+                });
+            })
+            ->get();
+
+        return response()->json($tasks);
+    }
+
+    public function getByClassAndUser(Request $request, $classId, $userId)
+    {
+        $search = $request->query('search');
+
+        // Cek apakah user adalah member dari class tersebut
+        $isMember = ClassMember::where('class_id', $classId)
+            ->where('user_id', $userId)
+            ->exists();
+
+        if (!$isMember) {
+            return response()->json(['message' => 'User is not a member of this class.'], 403);
+        }
+
+        $tasks = Task::with('class')
+            ->where('class_id', $classId)
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%$search%")
+                    ->orWhere('description', 'like', "%$search%");
+                });
+            })
+            ->get();
+
+        return response()->json($tasks);
+    }
+
+    public function getTasksByUserId(Request $request, $userId)
+    {
+        $search = $request->query('search');
+
+        // Ambil semua class_id yang diikuti oleh user
+        $classIds = ClassMember::where('user_id', $userId)->pluck('class_id');
+
+        // Ambil semua task dari class yang diikuti user
+        $tasks = Task::with('class')
+            ->whereIn('class_id', $classIds)
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%$search%")
+                    ->orWhere('description', 'like', "%$search%");
+                });
+            })
+            ->get();
+
+        return response()->json($tasks);
+    }
+
 
     public function store(Request $request)
     {
