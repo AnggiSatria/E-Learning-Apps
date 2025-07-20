@@ -23,6 +23,7 @@ Route::apiResource('teachers', TeacherController::class);
 Route::apiResource('classes', ClassController::class);
 Route::apiResource('class-members', ClassMemberController::class);
 Route::get('/class-members/user/{userId}', [ClassMemberController::class, 'getByUserId']);
+Route::get('/class-members/class/{classId}', [ClassMemberController::class, 'getByClassId']);
 Route::apiResource('tasks', TaskController::class);
 Route::get('/tasks/user/{userId}', [TaskController::class, 'getTasksByUserId']);
 Route::get('/tasks/class/{classId}', [TaskController::class, 'getByClassId']);

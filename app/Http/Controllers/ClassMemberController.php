@@ -59,6 +59,24 @@ class ClassMemberController extends Controller
         return response()->json($classes);
     }
 
+    public function getByClassId(Request $request, $classId)
+    {
+        $search = $request->query('search');
+
+        $members = ClassMember::with(['user', 'class']) // relasi user & class
+            ->where('class_id', $classId)
+            ->when($search, function ($query, $search) {
+                $query->where('role', 'like', "%$search%")
+                    ->orWhereHas('user', function ($q) use ($search) {
+                        $q->where('first_name', 'like', "%$search%")
+                            ->orWhere('last_name', 'like', "%$search%");
+                    });
+            })
+            ->get();
+
+        return response()->json($members);
+    }
+
 
     public function store(Request $request)
     {
