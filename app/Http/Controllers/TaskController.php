@@ -12,13 +12,21 @@ class TaskController extends Controller
     public function index(Request $request)
     {
         $search = $request->query('search');
+        $perPage = $request->query('per_page'); 
+        $page = $request->query('page');
 
-        $tasks = Task::with('class')
+        $query = Task::with('class')
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', "%$search%")
                       ->orWhere('description', 'like', "%$search%");
-            })
-            ->get();
+            });
+        
+            if ($perPage && $page) {
+                $tasks = $query->paginate($perPage, ['*'], 'page', $page);
+            } else {
+                $tasks = $query->get();
+            }
+        
 
         return response()->json($tasks);
     }
@@ -37,21 +45,26 @@ class TaskController extends Controller
         return response()->json($task);
     }
 
-   
-
     public function getByClassId(Request $request, $classId)
     {
         $search = $request->query('search');
+        $perPage = $request->query('per_page'); 
+        $page = $request->query('page');
 
-        $tasks = Task::with('class')
+        $query = Task::with('class')
             ->where('class_id', $classId)
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%$search%")
                     ->orWhere('description', 'like', "%$search%");
                 });
-            })
-            ->get();
+            });
+
+            if ($perPage && $page) {
+                $tasks = $query->paginate($perPage, ['*'], 'page', $page);
+            } else {
+                $tasks = $query->get();
+            }
 
         return response()->json($tasks);
     }
@@ -85,24 +98,30 @@ class TaskController extends Controller
     public function getTasksByUserId(Request $request, $userId)
     {
         $search = $request->query('search');
+        $perPage = $request->query('per_page'); 
+        $page = $request->query('page');
 
         // Ambil semua class_id yang diikuti oleh user
         $classIds = ClassMember::where('user_id', $userId)->pluck('class_id');
 
         // Ambil semua task dari class yang diikuti user
-        $tasks = Task::with('class')
+        $query = Task::with('class')
             ->whereIn('class_id', $classIds)
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%$search%")
                     ->orWhere('description', 'like', "%$search%");
                 });
-            })
-            ->get();
+            });
+
+            if ($perPage && $page) {
+                $tasks = $query->paginate($perPage, ['*'], 'page', $page);
+            } else {
+                $tasks = $query->get();
+            }
 
         return response()->json($tasks);
     }
-
 
     public function store(Request $request)
     {
@@ -123,6 +142,8 @@ class TaskController extends Controller
         }
 
         $task = Task::create($validated);
+
+        $task->load('class');
 
         return response()->json($task, 201);
     }
@@ -147,6 +168,8 @@ class TaskController extends Controller
         }
 
         $task->update($validated);
+
+        $task->load('class');
 
         return response()->json($task);
     }

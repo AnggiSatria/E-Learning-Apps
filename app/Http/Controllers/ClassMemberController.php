@@ -45,18 +45,37 @@ class ClassMemberController extends Controller
     public function getByUserId(Request $request, $userId)
     {
         $search = $request->query('search');
+        $page = $request->query('page');
+        $perPage = $request->query('per_page');
 
-        $classes = ClassMember::with('class')
+        $query = ClassMember::with('class')
             ->where('user_id', $userId)
             ->when($search, function ($query, $search) {
                 $query->whereHas('class', function ($q) use ($search) {
                     $q->where('name', 'like', "%$search%");
                 });
-            })
-            ->get()
-            ->pluck('class'); 
+            });
 
-        return response()->json($classes);
+        // Jika ada pagination
+        if ($page || $perPage) {
+            $perPage = $perPage ?? 10;
+            $classMembers = $query->paginate($perPage);
+
+            $transformed = $classMembers->getCollection()->map(function ($item) {
+                return $item->class;
+            });
+
+            $classMembers->setCollection($transformed);
+
+            return response()->json($classMembers);
+        }
+
+        // Tanpa pagination
+        $classMembers = $query->get()->map(function ($item) {
+            return $item->class;
+        });
+
+        return response()->json($classMembers);
     }
 
     public function getByClassId(Request $request, $classId)

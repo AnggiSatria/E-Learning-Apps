@@ -11,10 +11,10 @@ class ClassController extends Controller
     public function index(Request $request)
     {
         $search = $request->query('search');
-
+        $perPage = $request->query('per_page', 10); 
         $classes = Classroom::when($search, function ($query, $search) {
             $query->where('name', 'like', "%$search%");
-        })->get();
+        })->paginate($perPage);
 
         return response()->json($classes);
     }
